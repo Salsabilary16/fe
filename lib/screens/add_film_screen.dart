@@ -49,12 +49,10 @@ class _AddFilmScreenState extends State<AddFilmScreen> {
 
     late Map uploadRes;
 
-    // 🌐 WEB UPLOAD → pakai bytes
     if (kIsWeb) {
       final bytes = await pickedImage!.readAsBytes();
       uploadRes = await api.uploadPosterWeb(bytes, pickedImage!.name);
     }
-    // 📱 ANDROID UPLOAD → pakai file path
     else {
       uploadRes = await api.uploadPoster(pickedImage!.path);
     }
@@ -90,9 +88,17 @@ class _AddFilmScreenState extends State<AddFilmScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFF001A49),
       appBar: AppBar(
-        title: const Text("Tambah Film"),
         backgroundColor: Colors.transparent,
+        elevation: 0,
+        foregroundColor: Colors.white, 
+        title: const Text("Tambah Film",
+        style: TextStyle(
+          color: Colors.white, 
+          fontWeight: FontWeight.bold,
+        ),
       ),
+    ),
+
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
         child: Column(
@@ -112,14 +118,12 @@ class _AddFilmScreenState extends State<AddFilmScreen> {
                             style: TextStyle(color: Colors.white70)),
                       )
 
-                    // 🌐 WEB PREVIEW
                     : kIsWeb
                         ? Image.network(
                             pickedImage!.path,
                             fit: BoxFit.cover,
                           )
 
-                        // 📱 ANDROID PREVIEW
                         : Image.file(
                             File(pickedImage!.path),
                             fit: BoxFit.cover,

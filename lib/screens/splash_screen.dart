@@ -6,7 +6,7 @@ class SplashScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF001A49), // Navy
+      backgroundColor: const Color(0xFF001A49),
       body: SafeArea(
         child: Center(
           child: Column(
@@ -15,27 +15,7 @@ class SplashScreen extends StatelessWidget {
 
               Image.asset(
                 "assets/logo.png",
-                width: 220,
-              ),
-
-              const SizedBox(height: 40),
-
-              const Text(
-                "ONLINE",
-                style: TextStyle(
-                  color: Colors.lightBlueAccent,
-                  fontSize: 40,
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: 1.5,
-                ),
-              ),
-              const Text(
-                "MOVIE TICKET",
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 22,
-                  fontWeight: FontWeight.w500,
-                ),
+                width: 260,
               ),
 
               const SizedBox(height: 120),
@@ -64,6 +44,7 @@ class SplashScreen extends StatelessWidget {
                   ),
                 ),
               ),
+
             ],
           ),
         ),

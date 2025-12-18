@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../services/server_api.dart';
-import 'home_screen.dart';   // <--- TAMBAH INI
+import 'home_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -16,6 +17,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
   bool loading = false;
 
+  // ======================= LOGIN FUNCTION =======================
   Future doLogin() async {
     if (emailC.text.isEmpty || passC.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -42,6 +44,15 @@ class _LoginScreenState extends State<LoginScreen> {
       }
 
       if (res["message"] == "Login sukses") {
+        // ======================= SIMPAN USER KE LOCAL STORAGE =======================
+        final prefs = await SharedPreferences.getInstance();
+        prefs.setInt("userId", res["user"]["id"]);
+        prefs.setString("userName", res["user"]["name"]);
+        prefs.setString("userEmail", res["user"]["email"]);
+
+        print("User ID tersimpan = ${prefs.getInt("userId")}");
+
+        // ======================= PINDAH KE HOME =======================
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
@@ -61,6 +72,7 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
+  // ======================= UI =======================
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -130,8 +142,6 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
 
               const SizedBox(height: 70),
-
-              Image.asset("assets/mountain.png"),
             ],
           ),
         ),
@@ -139,6 +149,7 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
+  // ======================= TEXT FIELD =======================
   Widget _inputField(TextEditingController c, String hint,
       {bool obscure = false}) {
     return Container(

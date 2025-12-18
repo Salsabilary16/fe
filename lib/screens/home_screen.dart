@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../services/server_api.dart';
 import 'add_film_screen.dart';
 import 'film_detail_screen.dart';
+import 'profile_screen.dart';
+import 'ticket_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   final Map user;
@@ -19,13 +22,31 @@ class _HomeScreenState extends State<HomeScreen> {
   TextEditingController searchC = TextEditingController();
 
   bool loading = true;
+  int userId = -1;
+  String userName = "";
+  String role = "";
+
+  int _selectedIndex = 0; // NAVIGATION INDEX
 
   @override
   void initState() {
     super.initState();
+    loadUserData();
     loadFilms();
   }
 
+  // ===================== LOAD USER DATA =====================
+  Future loadUserData() async {
+    final prefs = await SharedPreferences.getInstance();
+
+    setState(() {
+      userId = prefs.getInt("userId") ?? -1;
+      userName = prefs.getString("userName") ?? "User";
+      role = widget.user["role"];
+    });
+  }
+
+  // ===================== LOAD FILM LIST =====================
   Future loadFilms() async {
     final res = await api.getAllFilms();
 
@@ -36,6 +57,7 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
+  // ===================== SEARCH FILM =====================
   void searchFilm(String query) async {
     if (query.isEmpty) {
       setState(() => filteredFilms = films);
@@ -46,12 +68,33 @@ class _HomeScreenState extends State<HomeScreen> {
     setState(() => filteredFilms = res["films"]);
   }
 
+  // ===================== ON NAVIGATION TAP =====================
+  void _onItemTapped(int index) {
+    setState(() => _selectedIndex = index);
+
+    if (index == 1) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => TicketScreen(userId: userId)),
+      );
+    }
+
+    if (index == 2) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => ProfileScreen(userId: userId)),
+      );
+    }
+  }
+
+  // ===================== UI =====================
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFF001A49),
 
-      floatingActionButton: widget.user["role"] == "admin"
+      // ==================== FLOATING BUTTON ADMIN ====================
+      floatingActionButton: role == "admin"
           ? FloatingActionButton(
               backgroundColor: Colors.orange,
               child: const Icon(Icons.add),
@@ -64,6 +107,30 @@ class _HomeScreenState extends State<HomeScreen> {
             )
           : null,
 
+      // ==================== BOTTOM NAVIGATION BAR (WARNA SESUAI BACKGROUND) ====================
+      bottomNavigationBar: BottomNavigationBar(
+        backgroundColor: const Color(0xFF001A49), // sama seperti background
+        selectedItemColor: Colors.orange,
+        unselectedItemColor: Colors.white54,
+        currentIndex: _selectedIndex,
+        onTap: _onItemTapped,
+        items: const [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home),
+            label: "Beranda",
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.confirmation_number),
+            label: "Tiket",
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.person),
+            label: "Profil",
+          ),
+        ],
+      ),
+
+      // ==================== BODY ====================
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -73,10 +140,14 @@ class _HomeScreenState extends State<HomeScreen> {
               const SizedBox(height: 20),
 
               Text(
-                "Halo, ${widget.user["name"]}",
+                "Halo, $userName",
                 style: const TextStyle(
-                    color: Colors.white, fontSize: 22, fontWeight: FontWeight.bold),
+                  color: Colors.white,
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
+
               const Text(
                 "Pesan film favorit kamu",
                 style: TextStyle(color: Colors.white70),
@@ -84,6 +155,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
               const SizedBox(height: 20),
 
+              // SEARCH BOX
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 15),
                 decoration: BoxDecoration(
@@ -109,8 +181,10 @@ class _HomeScreenState extends State<HomeScreen> {
                 "Sedang Tayang",
                 style: TextStyle(color: Colors.white, fontSize: 18),
               ),
+
               const SizedBox(height: 10),
 
+              // FILM GRID
               Expanded(
                 child: loading
                     ? const Center(
@@ -120,13 +194,15 @@ class _HomeScreenState extends State<HomeScreen> {
                         padding: EdgeInsets.zero,
                         gridDelegate:
                             const SliverGridDelegateWithFixedCrossAxisCount(
-                                crossAxisCount: 2,
-                                childAspectRatio: 0.65,
-                                mainAxisSpacing: 10,
-                                crossAxisSpacing: 10),
+                          crossAxisCount: 2,
+                          childAspectRatio: 0.65,
+                          mainAxisSpacing: 10,
+                          crossAxisSpacing: 10,
+                        ),
                         itemCount: filteredFilms.length,
                         itemBuilder: (context, index) {
                           final film = filteredFilms[index];
+
                           return GestureDetector(
                             onTap: () {
                               Navigator.push(
@@ -153,9 +229,10 @@ class _HomeScreenState extends State<HomeScreen> {
                                 Text(
                                   film["title"],
                                   style: const TextStyle(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 14),
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 14,
+                                  ),
                                   maxLines: 2,
                                   textAlign: TextAlign.center,
                                 ),
